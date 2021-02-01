@@ -1,7 +1,7 @@
 # openbox notify patch
 
-Notify patch for openbox window manager and send to another process when window change
-This patch is only required to send message (Create/Close) to the abcdesktop webfront stack.
+Notify patch for openbox window manager and send to another process when a window change event occurs.
+This patch is only required to send message (Create/Close) to the abcdesktop backend stack (spawner.js).
 
 abcdesktop use [openbox](http://openbox.org/) as X11 window manager.
 
