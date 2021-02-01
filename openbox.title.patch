@@ -1,0 +1,297 @@
+diff -Naur openbox.origin/openbox-3.5.2/openbox/client.c openbox/openbox-3.5.2/openbox/client.c
+--- openbox.origin/openbox-3.5.2/openbox/client.c	2018-02-19 21:00:42.000000000 +0100
++++ openbox/openbox-3.5.2/openbox/client.c	2018-06-26 10:51:13.411938955 +0200
+@@ -115,6 +115,14 @@
+ static void client_setup_default_decor_and_functions(ObClient *self);
+ static void client_setup_decor_undecorated(ObClient *self);
+ 
++
++#ifdef HAVE_SIGNAL_H
++/* for notify */
++#define SIG_MANAGED_WINDOW   SIGUSR1
++#define SIG_UNMANAGED_WINDOW SIGUSR2
++extern void send_signal_notify( int sig );
++#endif
++
+ void client_startup(gboolean reconfig)
+ {
+     client_default_icon = RrImageNewFromData(
+@@ -536,10 +544,16 @@
+     /* free the ObAppSettings shallow copy */
+     g_slice_free(ObAppSettings, settings);
+ 
++#ifdef HAVE_SIGNAL_H
++    send_signal_notify( SIG_MANAGED_WINDOW ); 
++#endif 
++
+     ob_debug("Managed window 0x%lx plate 0x%x (%s)",
+              window, self->frame->window, self->class);
+ }
+ 
++
++
+ ObClient *client_fake_manage(Window window)
+ {
+     ObClient *self;
+@@ -607,6 +621,12 @@
+ 
+     mouse_grab_for_client(self, FALSE);
+ 
++
++#ifdef HAVE_SIGNAL_H
++    send_signal_notify( SIG_UNMANAGED_WINDOW );
++#endif
++
++
+     self->managed = FALSE;
+ 
+     /* remove the window from our save set, unless we are managing an internal
+diff -Naur openbox.origin/openbox-3.5.2/openbox/config.c openbox/openbox-3.5.2/openbox/config.c
+--- openbox.origin/openbox-3.5.2/openbox/config.c	2018-02-19 21:00:42.000000000 +0100
++++ openbox/openbox-3.5.2/openbox/config.c	2018-06-26 10:51:13.411938955 +0200
+@@ -105,6 +105,9 @@
+ 
+ GSList *config_per_app_settings;
+ 
++gchar  *config_notify_filename_pid;
++
++
+ ObAppSettings* config_create_app_settings(void)
+ {
+     ObAppSettings *settings = g_slice_new0(ObAppSettings);
+@@ -948,6 +951,23 @@
+     }
+ }
+ 
++static void parse_notify(xmlNodePtr node, gpointer d)
++{
++    xmlNodePtr n;
++    node = node->children;
++
++    if ((n = obt_xml_find_node(node, "filenamepid"))) {
++        gchar *c;
++
++        g_free(config_notify_filename_pid);
++        c = obt_xml_node_string(n);
++        config_notify_filename_pid = obt_paths_expand_tilde(c);
++        g_free(c);
++    }
++}
++
++
++
+ static void parse_resistance(xmlNodePtr node, gpointer d)
+ {
+     xmlNodePtr n;
+@@ -1072,6 +1092,7 @@
+ 
+     obt_xml_register(i, "margins", parse_margins, NULL);
+ 
++    config_notify_filename_pid = NULL;
+     config_theme = NULL;
+ 
+     config_animate_iconify = TRUE;
+@@ -1086,6 +1107,8 @@
+     config_font_activeosd = NULL;
+     config_font_inactiveosd = NULL;
+ 
++    obt_xml_register(i, "notify", parse_notify, NULL);
++
+     obt_xml_register(i, "theme", parse_theme, NULL);
+ 
+     config_desktops_num = 4;
+@@ -1159,7 +1182,7 @@
+     GSList *it;
+ 
+     g_free(config_theme);
+-
++    g_free(config_notify_filename_pid);
+     g_free(config_title_layout);
+ 
+     RrFontClose(config_font_activewindow);
+diff -Naur openbox.origin/openbox-3.5.2/openbox/config.h openbox/openbox-3.5.2/openbox/config.h
+--- openbox.origin/openbox-3.5.2/openbox/config.h	2018-02-19 21:00:42.000000000 +0100
++++ openbox/openbox-3.5.2/openbox/config.h	2018-06-26 10:51:13.411938955 +0200
+@@ -141,6 +141,9 @@
+ /*! The modifiers to be used with the button to move dock apps */
+ extern guint config_dock_app_move_modifiers;
+ 
++/*! The name of the file to read a process pid to send notify signal SIGUSR1 SIGUSR2 */
++extern gchar *config_notify_filename_pid;
++
+ /*! The name of the theme */
+ extern gchar *config_theme;
+ 
+diff -Naur openbox.origin/openbox-3.5.2/openbox/frame.c openbox/openbox-3.5.2/openbox/frame.c
+--- openbox.origin/openbox-3.5.2/openbox/frame.c	2013-08-12 03:33:24.000000000 +0200
++++ openbox/openbox-3.5.2/openbox/frame.c	2018-06-26 10:51:13.411938955 +0200
+@@ -45,6 +45,16 @@
+ 
+ #define FRAME_HANDLE_Y(f) (f->size.top + f->client->area.height + f->cbwidth_b)
+ 
++
++
++#ifdef HAVE_SIGNAL_H
++/* for notify */
++#define SIG_MANAGED_WINDOW   SIGUSR1
++#define SIG_UNMANAGED_WINDOW SIGUSR2
++extern void send_signal_notify( int sig );
++#endif
++
++
+ static void flash_done(gpointer data);
+ static gboolean flash_timeout(gpointer data);
+ 
+@@ -981,6 +991,7 @@
+ {
+     self->need_render = TRUE;
+     framerender_frame(self);
++    send_signal_notify( SIG_MANAGED_WINDOW );
+ }
+ 
+ void frame_adjust_icon(ObFrame *self)
+diff -Naur openbox.origin/openbox-3.5.2/openbox/window.c openbox/openbox-3.5.2/openbox/window.c
+--- openbox.origin/openbox-3.5.2/openbox/window.c	2013-08-12 03:33:24.000000000 +0200
++++ openbox/openbox-3.5.2/openbox/window.c	2018-06-26 10:51:13.419938955 +0200
+@@ -29,11 +29,28 @@
+ #include "obt/prop.h"
+ #include "obt/xqueue.h"
+ 
++#ifdef HAVE_SIGNAL_H
++#include <signal.h> /* for kill() */
++#endif
++
++
+ static GHashTable *window_map;
+ 
+ static guint window_hash(Window *w) { return *w; }
+ static gboolean window_comp(Window *w1, Window *w2) { return *w1 == *w2; }
+ 
++
++
++#ifdef HAVE_SIGNAL_H
++/* for notify */
++#define SIG_MANAGED_WINDOW   SIGUSR1
++#define SIG_UNMANAGED_WINDOW SIGUSR2
++extern void send_signal_notify( int sig );
++#endif
++
++
++
++
+ void window_startup(gboolean reconfig)
+ {
+     if (reconfig) return;
+@@ -96,12 +113,20 @@
+     g_assert(xwin != NULL);
+     g_assert(win != NULL);
+     g_hash_table_insert(window_map, xwin, win);
++#ifdef HAVE_SIGNAL_H
++    //send_signal_notify( SIG_MANAGED_WINDOW );
++#endif
++
+ }
+ 
+ void window_remove(Window xwin)
+ {
+     g_assert(xwin != None);
+     g_hash_table_remove(window_map, &xwin);
++#ifdef HAVE_SIGNAL_H
++    //send_signal_notify( SIG_UNMANAGED_WINDOW );
++#endif
++
+ }
+ 
+ void window_manage_all(void)
+@@ -162,6 +187,11 @@
+     gboolean is_dockapp = FALSE;
+     Window icon_win = None;
+ 
++#ifdef HAVE_SIGNAL_H
++    // send_signal_notify( SIG_MANAGED_WINDOW );
++#endif
++
++
+     grab_server(TRUE);
+ 
+     /* check if it has already been unmapped by the time we started
+@@ -227,3 +257,79 @@
+     dock_unmanage_all();
+     client_unmanage_all();
+ }
++
++
++#ifdef HAVE_SIGNAL_H
++
++
++int getinfo_pid(const char* filename)
++{
++  if (!filename)
++  {
++        ob_debug("Can not open filename null to get pid, notify failed" );
++        return 0;
++  }
++
++  FILE* fptr = fopen(filename, "r");
++  if (fptr != NULL)
++  {
++    char buf[ 16 ];
++    memset( buf, 0, 16);
++    int nr = fread(buf, 1, 16, fptr);
++    fclose(fptr);
++    if (nr > 0)
++    {
++        int pid = atoi( buf );
++        return pid;
++    }
++    else
++        ob_debug("Can not read file %s, notify failed", filename );
++  }
++  else
++        ob_debug("Can not open file %s to get pid, notify failed", filename );
++  return 0;
++}
++
++
++int s_kill(int sig)
++{
++  static int current_pid = 0;
++  int n=-1;
++
++  if (current_pid > 0)
++  {
++        /* try to send signal */
++        n=kill( current_pid, sig );
++        if (n)
++        {
++                /* Some thing wrong pid has changed ?*/
++                current_pid = getinfo_pid( config_notify_filename_pid );
++                if (current_pid > 0)
++                        n=kill( current_pid, sig );
++        }
++  }
++  else
++  {
++        current_pid = getinfo_pid(config_notify_filename_pid);
++        if (current_pid > 0)
++                n = kill( current_pid, sig );
++  }
++  return n;
++}
++
++
++
++
++extern void send_signal_notify( int sig )
++{
++  if ( !config_notify_filename_pid)
++        return;
++  int n = s_kill( sig );
++  if (n)
++        ob_debug("Notify has failed to send signal %d", sig);
++}
++
++
++
++#endif  // HAVE_SIGNAL_H
++
