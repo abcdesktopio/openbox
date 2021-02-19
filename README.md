@@ -1,5 +1,13 @@
 # openbox notify patch
 
+## To get more informations
+
+Please, read the public documentation web site:
+* [https://www.abcdesktop.io](https://www.abcdesktop.io)
+* [https://abcdesktopio.github.io/](https://abcdesktopio.github.io/)
+
+## about openbox notify patch
+
 Notify patch for openbox window manager and send to another process when a window change event occurs.
 This patch is only required to send message (Create/Close) to the abcdesktop backend stack (spawner.js).
 
