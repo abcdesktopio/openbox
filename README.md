@@ -70,6 +70,8 @@ The quick and dirty way, to apply patch and build the new debian package for ope
 > Change the directory name ```cd openbox-3.6.1``` with the correct name
 
 ```
+# enable source list
+sed -i '/deb-src/s/^# //' /etc/apt/sources.list && apt update
 apt-get install devscripts devscripts binutils
 apt-get source openbox
 apt-get build-dep openbox
