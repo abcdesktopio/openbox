@@ -75,7 +75,7 @@ sed -i '/deb-src/s/^# //' /etc/apt/sources.list && apt update
 apt-get install devscripts devscripts binutils
 apt-get source openbox
 apt-get build-dep openbox
-wget https://github.com/abcdesktopio/openbox/openbox.title.patch 
+wget https://raw.githubusercontent.com/abcdesktopio/openbox/main/openbox.title.patch
 cd openbox-3.6.1
 patch -p2 < ../openbox.title.patch 
 dch --local opendesktoppatch1
