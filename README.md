@@ -78,7 +78,7 @@ apt-get build-dep openbox
 wget https://raw.githubusercontent.com/abcdesktopio/openbox/main/openbox.title.patch
 cd openbox-3.6.1
 patch -p2 < ../openbox.title.patch 
-dch --local opendesktoppatch1
+dch --local abcdesktoppatch1
 dpkg-source --commit
 debuild -us -uc
 cd ..
