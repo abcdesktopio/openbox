@@ -23,6 +23,8 @@ RUN apt-get install -y --no-install-recommends devscripts devscripts binutils wg
 RUN apt-get source openbox
 RUN apt-get build-dep -y openbox
 
+COPY /openbox.title.patch .
+
 # get patch
 RUN cd openbox-3.6.1 && \
     patch -p2 < ../openbox.title.patch 
