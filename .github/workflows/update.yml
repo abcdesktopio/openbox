@@ -38,9 +38,9 @@ jobs:
           push: true
           build-args: |
             BASE_IMAGE_RELEASE=20.04
-            BASE_IMAGE=ubuntu.20.04
+            BASE_IMAGE=ubuntu:20.04
           tags: |
-            abcdesktopio/openbox.20.04:dev
+            abcdesktopio/openbox:20.04
 
       - name: Build abcdesktop openbox 21.04
         uses: docker/build-push-action@v2
@@ -49,13 +49,13 @@ jobs:
           push: true
           build-args: |
             BASE_IMAGE_RELEASE=21.04
-            BASE_IMAGE=ubuntu.21.04
+            BASE_IMAGE=ubuntu:21.04
           tags: |
-            abcdesktopio/openbox.21.04
+            abcdesktopio/openbox:21.04
             
       - name: Dispatch on repository oc.software
         uses: peter-evans/repository-dispatch@v1
         with:
           token: ${{ secrets.TOKEN_DISPATCH }}
-          repository: abcdesktopio/oc.software.18.04
+          repository: abcdesktopio/oc.ubuntu.18.04
           event-type: dispatch-from-openbox
