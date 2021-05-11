@@ -70,16 +70,23 @@ The quick and dirty way, to apply patch and build the new debian package for ope
 > Change the directory name ```cd openbox-3.6.1``` with the correct name
 
 ```
+# set non interactive
+# echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
 # enable source list
-sed -i '/deb-src/s/^# //' /etc/apt/sources.list && apt update
-apt-get install devscripts devscripts binutils
+# sed -i '/deb-src/s/^# //' /etc/apt/sources.list 
+# run update
+# apt update
+# install dep
+apt-get install -y --no-install-recommends devscripts devscripts binutils wget
 apt-get source openbox
-apt-get build-dep openbox
+apt-get build-dep -y openbox
 wget https://raw.githubusercontent.com/abcdesktopio/openbox/main/openbox.title.patch
 cd openbox-3.6.1
 patch -p2 < ../openbox.title.patch 
-dch --local abcdesktoppatch1
-dpkg-source --commit
+# dch --local abcdesktop_sig_usr
+dch -n abcdesktop_sig_usr
+# dpkg-source --commit
+EDITOR=/bin/true dpkg-source -q --commit . abcdesktop_sig_usr
 debuild -us -uc
 cd ..
 ls -la # you should see deb file here
