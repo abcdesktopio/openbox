@@ -77,7 +77,7 @@ The quick and dirty way, to apply patch and build the new debian package for ope
 # run update
 # apt update
 # install dep
-apt-get install -y --no-install-recommends devscripts devscripts binutils wget
+apt-get install -y --no-install-recommends devscripts binutils wget
 apt-get source openbox
 apt-get build-dep -y openbox
 wget https://raw.githubusercontent.com/abcdesktopio/openbox/main/openbox.title.patch
