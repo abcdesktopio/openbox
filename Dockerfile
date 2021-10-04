@@ -38,22 +38,26 @@ RUN chown -R $BUSER:$BUSER /home/$BUSER
 USER $BUSER
 RUN cd /home/$BUSER && apt-get source openbox
 
+
 RUN ls -la /
+RUN ls -la /home/$BUSER
 
 # get patch
-RUN cd openbox-3.6.1 && patch -p2 < /openbox.title.patch 
+RUN cd /home/$BUSER/openbox-3.6.1 && patch -p2 < /openbox.title.patch 
     
 # dch --local abcdesktop_sig_usr
-RUN cd openbox-3.6.1 && dch -n abcdesktop_sig_usr
+RUN cd /home/$BUSER/openbox-3.6.1 && dch -n abcdesktop_sig_usr
 
 # dpkg-source --commit
-RUN cd openbox-3.6.1 && \
+RUN cd /home/$BUSER/openbox-3.6.1 && \
     EDITOR=/bin/true dpkg-source -q --commit . abcdesktop_sig_usr 
     
-RUN cd openbox-3.6.1 && \    
+RUN cd /home/$BUSER/openbox-3.6.1 && \    
     debuild -us -uc
     
-RUN ls -la *.deb
+RUN ls -la /home/$BUSER/*.deb
+USER root
+RUN cp /home/$BUSER/*.deb /
 # copy your new deb to the oc.user directory 
 # then rebuild your oc.user image 
 
