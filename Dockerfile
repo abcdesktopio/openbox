@@ -20,14 +20,28 @@ RUN sed -i '/deb-src/s/^# //' /etc/apt/sources.list
 RUN apt update
 # install dev, dep and sources
 RUN apt-get install -y fakeroot devscripts devscripts binutils wget
-RUN apt-get source openbox
 RUN apt-get build-dep -y openbox
 
 COPY /openbox.title.patch .
 
+RUN cat /etc/passwd
+
+# Next command use $BUSER context
+ENV BUSER builder
+# RUN adduser --disabled-password --gecos '' $BUSER
+# RUN id -u $BUSER &>/dev/null || 
+RUN groupadd --gid 4096 $BUSER
+RUN useradd --create-home --shell /bin/bash --uid 4096 -g $BUSER --groups sudo $BUSER
+# hack: be shure to own the home dir 
+RUN chown -R $BUSER:$BUSER /home/$BUSER
+
+USER $BUSER
+RUN cd /home/$BUSER && apt-get source openbox
+
+RUN ls -la /
+
 # get patch
-RUN cd openbox-3.6.1 && \
-    patch -p2 < ../openbox.title.patch 
+RUN cd openbox-3.6.1 && patch -p2 < /openbox.title.patch 
     
 # dch --local abcdesktop_sig_usr
 RUN cd openbox-3.6.1 && dch -n abcdesktop_sig_usr
@@ -42,3 +56,5 @@ RUN cd openbox-3.6.1 && \
 RUN ls -la *.deb
 # copy your new deb to the oc.user directory 
 # then rebuild your oc.user image 
+
+
