@@ -35,7 +35,6 @@ jobs:
             --build-args BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') \
             --platform linux/amd64,linux/arm/v6,linux/arm/v7,linux/arm64 \
             --output "type=image,push=false" \
-            abcdesktopio/openbox:18.04\
             --file ./Dockerfile .
             
       - name: Build abcdesktop openbox 18.04
