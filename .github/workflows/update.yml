@@ -28,9 +28,10 @@ jobs:
         uses: docker/setup-buildx-action@v1
         
       - name: Available platforms
-        run: echo ${{ steps.buildx.outputs.platforms }}
+        run: |
+          docker buildx ls
       
-      - name: Run Buildx openbox.${{ matrix.BASE_IMAGE_RELEASE }}
+      - name: Run docker buildx openbox.${{ matrix.BASE_IMAGE_RELEASE }}
         run: |
           docker buildx build \
             --build-arg BASE_IMAGE_RELEASE=${{ matrix.BASE_IMAGE_RELEASE }} \
