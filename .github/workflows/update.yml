@@ -1,4 +1,4 @@
-name: Update
+name: patch_openbox
 
 on:
   push:
