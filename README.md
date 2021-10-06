@@ -1,6 +1,6 @@
 # openbox notify patch
 
-![Patch openbox](https://github.com/abcdesktopio/openbox/workflows/Update/badge.svg)
+![patch_openbox](https://github.com/abcdesktopio/openbox/workflows/patch_openbox/badge.svg)
 
 ## To get more informations
 
