@@ -1,5 +1,7 @@
 # openbox notify patch
 
+![Patch openbox](https://github.com/abcdesktopio/openbox/workflows/Update/badge.svg)
+
 ## To get more informations
 
 Please, read the public documentation web site:
