@@ -32,7 +32,7 @@ source="http://openbox.org/dist/openbox/openbox-$pkgver.tar.gz
 
 prepare() {
 	default_prepare
-	patch --directory="${srcdir}/$pkgname-$pkgver" --forward --strip=1 --input="${srcdir}/../openbox.title.patch"
+	patch -p2 --directory="${srcdir}/$pkgname-$pkgver" --forward --input="${srcdir}/../openbox.title.patch"
 	autoreconf -fi
 }
 
