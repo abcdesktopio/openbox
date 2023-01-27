@@ -25,7 +25,9 @@ makedepends="$depends_dev
 	"
 subpackages="$pkgname-dev $pkgname-doc $pkgname-libs $pkgname-gnome
 	$pkgname-kde $pkgname-lang"
-source="http://openbox.org/dist/openbox/openbox-$pkgver.tar.gz
+
+# openbox_3.6.1.orig.tar.gz
+source="https://raw.githubusercontent.com/abcdesktopio/openbox/main/openbox-$pkgver.tar.gz
 	https://icculus.org/openbox/tools/setlayout.c
 	python3.patch
 	"
