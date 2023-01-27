@@ -27,7 +27,7 @@ subpackages="$pkgname-dev $pkgname-doc $pkgname-libs $pkgname-gnome
 	$pkgname-kde $pkgname-lang"
 
 # openbox_3.6.1.orig.tar.gz
-source="https://raw.githubusercontent.com/abcdesktopio/openbox/main/openbox-$pkgver.tar.gz
+source="openbox-$pkgver.tar.gz
 	https://icculus.org/openbox/tools/setlayout.c
 	python3.patch
 	"
