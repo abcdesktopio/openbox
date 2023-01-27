@@ -28,7 +28,6 @@ subpackages="$pkgname-dev $pkgname-doc $pkgname-libs $pkgname-gnome
 
 # openbox_3.6.1.orig.tar.gz
 source="openbox-$pkgver.tar.gz
-	https://icculus.org/openbox/tools/setlayout.c
 	python3.patch
 	"
 
@@ -46,7 +45,6 @@ build() {
 		--sysconfdir=/etc \
 		--disable-static
 	make
-	gcc $CFLAGS $LDFLAGS -o setlayout "$srcdir"/setlayout.c -lX11
 }
 
 check() {
@@ -55,7 +53,6 @@ check() {
 
 package() {
 	make -j1 DESTDIR="$pkgdir" install
-	install "$builddir"/setlayout "$pkgdir"/usr/bin/setlayout
 }
 
 libs() {
@@ -91,6 +88,5 @@ kde() {
 
 sha512sums="
 5e6f4a214005bea8b26bc8959fe5bb67356a387ddd317e014f43cb5b5bf263ec617a5973e2982eb76a08dc7d3ca5ec9e72e64c9b5efd751001a8999b420b1ad0  openbox-3.6.1.tar.gz
-40f7913ecc1b5df9a931ab36a5d4cf47b59eba543fe8b21e4a2724e7cfdfe06814893d8ded8c7a1ce0082126ca89397de0521f9c265a57e376664042b63d612f  setlayout.c
 bd9314998e8239fefd4449928d3bac1a9cc94542fd8c2e76499fbb56e4770af4967e1dfcbb6425acffd22f4d4f443faf2caadef913a13ed42a154ce6ac963e53  python3.patch
 "
